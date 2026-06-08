@@ -71,8 +71,4 @@ Make sure you have the following installed on your machine:
    npx expo start --clear
    ```
    4. Link to Phone Device: Ensure your physical smartphone is on the exact same Wi-Fi network as your computer workstation.
-<<<<<<< HEAD
    5. Open your native iPhone Camera app, focus directly on the terminal's QR Code block, and accept the "Open in Expo Go" launch banner prompt.
-=======
-   5. Open your native iPhone Camera app, focus directly on the terminal's QR Code block, and accept the "Open in Expo Go" launch banner prompt.
->>>>>>> 3de83de (add simple UI mobile)
