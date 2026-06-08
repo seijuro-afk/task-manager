@@ -1,269 +1,141 @@
-import React, { useState } from 'react';
+// mobile/App.tsx
+import React, { useState, useRef } from 'react';
 import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  SafeAreaView, 
+  View,
   KeyboardAvoidingView, 
-  Platform,
-  StatusBar
+  Platform, 
+  StatusBar, 
+  useColorScheme, 
+  ScrollView, 
+  Dimensions 
 } from 'react-native';
-import { CheckCircle2, Circle, Eye, EyeOff, Mail, Lock } from 'lucide-react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+import { styles, lightPalette, darkPalette } from './styles';
+import Login from './Login';
+import AppDashboard from './Dashboard'; 
+import AppCalendar from './Calendar';   
+import AppSettings from './Settings'; // IMPORTED: Our new settings module
+
+// UPDATED: Added 'settings' type variant
+type ScreenState = 'login' | 'dashboard' | 'calendar' | 'settings';
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
-  // Navigation tracking state
-  const [currentScreen, setCurrentScreen] = useState<'login' | 'dashboard'>('login');
+  const systemTheme = useColorScheme();
+  const [isDarkMode, setIsDarkMode] = useState(systemTheme === 'dark');
+  const colors = isDarkMode ? darkPalette : lightPalette;
   
-  // Input fields tracking state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [secureText, setSecureText] = useState(true);
+  const [currentScreen, setCurrentScreen] = useState<ScreenState>('login');
+  
+  const scrollViewRef = useRef<ScrollView>(null);
 
-  const handleLogin = () => {
-    if (email.trim() && password.trim()) {
-      setCurrentScreen('dashboard');
-    } else {
-      alert('Please fill out your Email and Password fields.');
-    }
+  // UPDATED: Extended to accept 'settings' type signature
+  const handleNavigation = (screen: 'dashboard' | 'calendar' | 'settings') => {
+    setCurrentScreen(screen);
+    
+    // Map destinations cleanly to their specific horizontal page array offset indices
+    let pageIndex = 0;
+    if (screen === 'calendar') pageIndex = 1;
+    if (screen === 'settings') pageIndex = 2;
+
+    scrollViewRef.current?.scrollTo({
+      x: pageIndex * SCREEN_WIDTH,
+      animated: true,
+    });
+  };
+
+  // Detects horizontal swipe movements and syncs screen tracking highlights
+  const handleScrollMomentumEnd = (event: any) => {
+    const contentOffsetX = event.nativeEvent.contentOffset.x;
+    const pageIndex = Math.round(contentOffsetX / SCREEN_WIDTH);
+    
+    if (pageIndex === 0) setCurrentScreen('dashboard');
+    else if (pageIndex === 1) setCurrentScreen('calendar');
+    else if (pageIndex === 2) setCurrentScreen('settings');
+  };
+
+  const handleToggleDarkMode = () => setIsDarkMode((prev) => !prev);
+
+  // Helper calculation to set initial offset position if states change elsewhere
+  const getHorizontalOffset = () => {
+    if (currentScreen === 'calendar') return SCREEN_WIDTH;
+    if (currentScreen === 'settings') return SCREEN_WIDTH * 2;
+    return 0;
   };
 
   return (
-    <SafeAreaView style={styles.outerCanvas}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f7f9fb" />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        style={styles.outerCanvas}
-      >
-        
-        {/* ==================== SCREEN 1: SIGN IN (LIGHT PREFERENCE) ==================== */}
-        {currentScreen === 'login' && (
-          <View style={styles.mainLayoutContainer}>
+    <SafeAreaProvider>
+      <SafeAreaView style={[styles.outerCanvas, { backgroundColor: colors.background }]}>
+        <StatusBar 
+          barStyle={systemTheme === 'dark' ? 'light-content' : 'dark-content'} 
+          backgroundColor={colors.background} 
+        />
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          style={styles.outerCanvas}
+        >
+          
+          {currentScreen === 'login' ? (
+            <Login colors={colors} onLoginSuccess={() => setCurrentScreen('dashboard')} />
+          ) : (
             
-            {/* Brand / Header Region */}
-            <View style={styles.brandHeaderSection}>
-              <View style={styles.brandIconBadge}>
-                {/* Replicating task_alt styling from your HTML file */}
-                <CheckCircle2 color="#ffffff" size={24} />
-              </View>
-              <Text style={styles.displayWelcomeText}>Welcome Back</Text>
-              <Text style={styles.bodySubtitleText}>Sign in to continue to Task Manager</Text>
-            </View>
-
-            {/* Form Card */}
-            <View style={styles.formCardBody}>
-              
-              {/* Email Input Field Group */}
-              <View style={styles.inputStackGroup}>
-                <Text style={styles.labelCapsIndicator}>EMAIL</Text>
-                <View style={styles.fieldLayoutInputWrapper}>
-                  <Mail color="#767586" size={18} style={styles.fieldInlineIcon} />
-                  <TextInput 
-                    style={styles.nativeTextInputField}
-                    placeholder="name@company.com"
-                    placeholderTextColor="#767586"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                  />
-                </View>
-              </View>
-
-              {/* Password Input Field Group */}
-              <View style={styles.inputStackGroup}>
-                <Text style={styles.labelCapsIndicator}>PASSWORD</Text>
-                <View style={styles.fieldLayoutInputWrapper}>
-                  <Lock color="#767586" size={18} style={styles.fieldInlineIcon} />
-                  <TextInput 
-                    style={styles.nativeTextInputField}
-                    placeholder="••••••••"
-                    placeholderTextColor="#767586"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={secureText}
-                    autoCapitalize="none"
-                  />
-                  {/* Interactive visibility toggle button matching your script file logic */}
-                  <TouchableOpacity 
-                    onPress={() => setSecureText(!secureText)} 
-                    style={styles.visibilityToggleTouchTarget}
-                  >
-                    {secureText ? (
-                      <EyeOff color="#464554" size={20} />
-                    ) : (
-                      <Eye color="#464554" size={20} />
-                    )}
-                  </TouchableOpacity>
-                </View>
+            /* Three-panel Horizontal Swipe Canvas container */
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              bounces={false}
+              onMomentumScrollEnd={handleScrollMomentumEnd}
+              onLayout={() => {
+                let pageIndex = 0;
+                if (currentScreen === 'calendar') pageIndex = 1;
+                if (currentScreen === 'settings') pageIndex = 2;
                 
-                {/* Forgot Password Link Wrapper */}
-                <View style={styles.forgotPasswordAlignWrapper}>
-                  <TouchableOpacity>
-                    <Text style={styles.forgotPasswordLinkText}>Forgot password?</Text>
-                  </TouchableOpacity>
-                </View>
+                if (pageIndex > 0) {
+                  scrollViewRef.current?.scrollTo({
+                    x: pageIndex * SCREEN_WIDTH,
+                    animated: false, // Keep false so the user doesn't see a weird slide jump on mount
+                  });
+                }
+              }}
+              style={styles.outerCanvas}
+            >
+              {/* PAGE 1: Tasks Dashboard */}
+              <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+                <AppDashboard 
+                  colors={colors} 
+                  onSignOut={() => setCurrentScreen('login')}
+                  onNavigate={handleNavigation} 
+                />
               </View>
 
-              {/* Submit Button Component */}
-              <TouchableOpacity style={styles.primaryActionButtonSubmit} onPress={handleLogin}>
-                <Text style={styles.headlineButtonTextLabel}>Sign In</Text>
-              </TouchableOpacity>
-            </View>
+              {/* PAGE 2: Calendar View */}
+              <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+                <AppCalendar 
+                  colors={colors} 
+                  onSignOut={() => setCurrentScreen('login')}
+                  onNavigate={handleNavigation} 
+                />
+              </View>
 
-            {/* Footer Form Alternatives Link */}
-            <View style={styles.footerRedirectArea}>
-              <Text style={styles.footerRegularBodyText}>
-                Don't have an account?{' '}
-                <Text style={styles.footerActiveHighlightLink}>Sign up</Text>
-              </Text>
-            </View>
+              {/* PAGE 3: Settings View (ADDED) */}
+              <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+                <AppSettings 
+                  colors={colors} 
+                  isDarkMode={isDarkMode}
+                  onToggleDarkMode={handleToggleDarkMode}
+                  onSignOut={() => setCurrentScreen('login')}
+                  onNavigate={handleNavigation} 
+                />
+              </View>
+            </ScrollView>
 
-          </View>
-        )}
+          )}
 
-        {/* ==================== SCREEN 2: SUCCESS DOCKING LAYOUT ==================== */}
-        {currentScreen === 'dashboard' && (
-          <View style={styles.successScreenPlaceholder}>
-            <CheckCircle2 color="#4648d4" size={64} />
-            <Text style={styles.displayWelcomeText}>Authenticated!</Text>
-            <Text style={[styles.bodySubtitleText, { textAlign: 'center', marginTop: 8 }]}>
-              Your backend communication channels are active.
-            </Text>
-            <TouchableOpacity 
-              style={[styles.primaryActionButtonSubmit, { width: '80%', marginTop: 24 }]}
-              onPress={() => setCurrentScreen('login')}
-            >
-              <Text style={styles.headlineButtonTextLabel}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
-
-// 🎨 Clean CSS Token Object Mapper (Harmonized Layout Theme)
-const styles = StyleSheet.create({
-  outerCanvas: {
-    flex: 1,
-    backgroundColor: '#f7f9fb', // Mapped from tailwind.config background variable
-  },
-  mainLayoutContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24, // Consistent structural layout padding
-  },
-  brandHeaderSection: {
-    alignItems: 'center',
-    marginBottom: 32, // Harmonized from spacing.xl token
-  },
-  brandIconBadge: {
-    backgroundColor: '#4648d4', // Mapped from primary color variable
-    width: 48,
-    height: 48,
-    borderRadius: 12, // Mapped from rounded-[12px]
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16, // Consistent spacing metric
-  },
-  displayWelcomeText: {
-    fontFamily: Platform.OS === 'ios' ? 'Hanken Grotesk' : 'sans-serif-condensed',
-    fontSize: 32, // Mapped from fontSize.display token
-    fontWeight: '700',
-    color: '#191c1e', // Mapped from on-surface token
-  },
-  bodySubtitleText: {
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    fontSize: 16, // Mapped from fontSize.body-lg token
-    color: '#464554', // Mapped from on-surface-variant token
-    marginTop: 8,
-  },
-  formCardBody: {
-    backgroundColor: '#ffffff', // Mapped from surface-container-lowest token
-    borderRadius: 12,
-    padding: 24, // Mapped from spacing.lg token
-    borderWidth: 1,
-    borderColor: '#eceef0', // Mapped from surface-container border line
-    shadowColor: '#191c1e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.03,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  inputStackGroup: {
-    marginBottom: 16, // Consistent spacing stack gap block
-  },
-  labelCapsIndicator: {
-    fontFamily: Platform.OS === 'ios' ? 'JetBrains Mono' : 'monospace',
-    fontSize: 12, // Mapped from fontSize.label-caps token
-    fontWeight: '500',
-    color: '#464554', // Mapped from on-surface-variant token
-    marginBottom: 6,
-    marginLeft: 4,
-  },
-  fieldLayoutInputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f2f4f6', // Mapped from surface-container-low token
-    borderRadius: 12, // Consistent border radius across design elements
-    paddingHorizontal: 16,
-  },
-  fieldInlineIcon: {
-    marginRight: 10,
-  },
-  nativeTextInputField: {
-    flex: 1,
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    fontSize: 14, // Mapped from fontSize.body-md token
-    color: '#191c1e', // Mapped from on-surface token
-    paddingVertical: 14, // Vertical sizing matching your form input
-  },
-  visibilityToggleTouchTarget: {
-    padding: 8,
-  },
-  forgotPasswordAlignWrapper: {
-    alignItems: 'flex-end',
-    marginTop: 8,
-  },
-  forgotPasswordLinkText: {
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    fontSize: 14,
-    color: '#4648d4', // Mapped from primary link color variable
-    fontWeight: '500',
-  },
-  primaryActionButtonSubmit: {
-    backgroundColor: '#4648d4', // Mapped from primary layout button color
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  headlineButtonTextLabel: {
-    fontFamily: Platform.OS === 'ios' ? 'Hanken Grotesk' : 'sans-serif-bold',
-    fontSize: 20, // Mapped from fontSize.headline-md token
-    fontWeight: '600',
-    color: '#ffffff', // Mapped from on-primary token
-  },
-  footerRedirectArea: {
-    alignItems: 'center',
-    marginTop: 32, // Mapped from spacing.xl token
-  },
-  footerRegularBodyText: {
-    fontFamily: Platform.OS === 'ios' ? 'Inter' : 'sans-serif',
-    fontSize: 14,
-    color: '#464554', // Mapped from on-surface-variant token
-  },
-  footerActiveHighlightLink: {
-    color: '#4648d4', // Mapped from primary token
-    fontWeight: '600',
-  },
-  successScreenPlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  }
-});
