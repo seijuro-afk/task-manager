@@ -10,9 +10,18 @@ A modern task management application built with a robust NestJS backend and a se
 
 ---
 
-## How to Run the App After Cloning
+## Project Directory Layout
+This repository is configured as a single unified monorepo:
+```text
+task-manager/
+├── backend/          # NestJS API code, database migration setups, and Prisma configurations
+├── mobile/           # React Native application source and asset libraries (Expo wrapper)
+├── docker-compose.yml# Container configuration script for local database services
+└── README.md         # Master ecosystem documentation blueprint
+```
 
-Follow these steps to get your local environment running from scratch if you've just cloned the repository.
+## Execution Framework: Local Installation Run Guide
+Follow these sequential tasks to launch the complete local development environment from a fresh terminal.
 
 ### 1. Prerequisites
 Make sure you have the following installed on your machine:
@@ -48,3 +57,18 @@ Make sure you have the following installed on your machine:
     ```bash
     npm run start:dev
     ```
+4. Build and Stream the Mobile Application
+   1. Open a brand-new, independent terminal console window and move into your mobile app workspace directory.
+   ```bash
+   cd mobile
+   ```
+   2. Validate your design icons package extensions are installed:
+   ```bash
+   npm install lucide-react-native
+   ```
+   3. Initialize the compilation builder cache and broadcast the engine network live:
+   ```bash
+   npx expo start --clear
+   ```
+   4. Link to Phone Device: Ensure your physical smartphone is on the exact same Wi-Fi network as your computer workstation.
+   5. Open your native iPhone Camera app, focus directly on the terminal's QR Code block, and accept the "Open in Expo Go" launch banner prompt.
