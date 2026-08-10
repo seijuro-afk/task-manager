@@ -31,9 +31,9 @@ Make sure you have the following installed on your machine:
 
 ### 2. Setup the Local Database
 1. Launch **Docker Desktop** on your machine.
-2. Open your terminal in the root directory and boot up the database container:
+2. Open your terminal in the root directory and copy the Docker environment example:
    ```bash
-   docker compose up -d
+   copy .env.example .env
    ```
 3. Configure and Start the Backend
     1. Move into the backend directory:
@@ -44,9 +44,9 @@ Make sure you have the following installed on your machine:
     ```bash
     npm install
     ```
-    3. Create a local environment file named .env inside the backend/ folder and paste your connection string:
+    3. Copy the backend environment example and update the variables:
     ```bash
-    DATABASE_URL="postgresql://admin:password123@localhost:5432/taskdb?schema=public"
+    copy .env.example .env
     ```
     4. Run the database migrations to build your tables and generate your Prisma client:
     ```bash

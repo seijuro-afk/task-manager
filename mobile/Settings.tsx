@@ -1,4 +1,3 @@
-// mobile/Settings.tsx
 import React, { useState } from 'react';
 import { 
   Text, 
@@ -27,7 +26,8 @@ interface SettingsProps {
   isDarkMode: boolean;
   onToggleDarkMode: () => void;
   onSignOut: () => void;
-  onNavigate: (screen: 'dashboard' | 'calendar' | 'settings') => void;
+  // Fixed TypeScript union syntax here:
+  onNavigate: (screen: 'dashboard' | 'calendar' | 'settings' | 'notifications') => void;
 }
 
 export default function Settings({ colors, isDarkMode, onToggleDarkMode, onSignOut, onNavigate }: SettingsProps) {
@@ -155,10 +155,14 @@ export default function Settings({ colors, isDarkMode, onToggleDarkMode, onSignO
           </View>
 
           {/* Notifications Link */}
-          <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 }}>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16 }} 
+            onPress={() => onNavigate('notifications')}
+            activeOpacity={0.7}
+          >
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surfaceLow, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                <Bell color={colors.textPlaceholder} size={18} />
+                <Bell color={colors.primary} size={18} />
               </View>
               <View>
                 <Text style={{ fontSize: 15, fontWeight: '600', color: colors.textMain }}>Notifications</Text>

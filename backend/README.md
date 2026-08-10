@@ -44,6 +44,36 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Run backend with database
+
+1. Install dependencies:
+```bash
+npm install
+```
+2. Generate Prisma Client:
+```bash
+npm run prisma:generate
+```
+3. Start PostgreSQL and API locally using Docker Compose from the repository root:
+```bash
+docker compose up -d
+```
+4. Push Prisma schema to the database:
+```bash
+npm run prisma:db:push
+```
+5. Start the NestJS backend:
+```bash
+npm run start:dev
+```
+
+Your API will be available at `http://localhost:3000` and Swagger docs at `http://localhost:3000/api`.
+
+If you prefer to run the API inside Docker instead of locally, use:
+```bash
+docker compose up --build
+```
+
 ## Run tests
 
 ```bash

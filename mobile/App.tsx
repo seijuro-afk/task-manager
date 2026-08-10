@@ -1,5 +1,5 @@
 // mobile/App.tsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View,
   KeyboardAvoidingView, 
@@ -15,38 +15,42 @@ import { styles, lightPalette, darkPalette } from './styles';
 import Login from './Login';
 import AppDashboard from './Dashboard'; 
 import AppCalendar from './Calendar';   
-import AppSettings from './Settings'; // IMPORTED: Our new settings module
+import AppSettings from './Settings'; 
+import SignUp from './SignUp'; 
+import ForgetPassword from './ForgetPassword';
+import NotificationSettings from './NotificationSettings';
 
-// UPDATED: Added 'settings' type variant
-type ScreenState = 'login' | 'dashboard' | 'calendar' | 'settings';
+type ScreenState = 'login' | 'dashboard' | 'calendar' | 'settings' | 'signup' | 'forget-password' | 'notifications';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
   const systemTheme = useColorScheme();
   const [isDarkMode, setIsDarkMode] = useState(systemTheme === 'dark');
   const colors = isDarkMode ? darkPalette : lightPalette;
+  const [calendarAnchorDate, setCalendarAnchorDate] = useState(new Date());
   
   const [currentScreen, setCurrentScreen] = useState<ScreenState>('login');
   
   const scrollViewRef = useRef<ScrollView>(null);
 
-  // UPDATED: Extended to accept 'settings' type signature
-  const handleNavigation = (screen: 'dashboard' | 'calendar' | 'settings') => {
+  const handleNavigation = (screen: 'dashboard' | 'calendar' | 'settings' | 'notifications') => {
     setCurrentScreen(screen);
     
-    // Map destinations cleanly to their specific horizontal page array offset indices
     let pageIndex = 0;
     if (screen === 'calendar') pageIndex = 1;
-    if (screen === 'settings') pageIndex = 2;
+    // Both settings and notifications sit on page index 2 track
+    if (screen === 'settings' || screen === 'notifications') pageIndex = 2; 
 
     scrollViewRef.current?.scrollTo({
       x: pageIndex * SCREEN_WIDTH,
-      animated: true,
+      animated: screen !== 'notifications',
     });
   };
 
-  // Detects horizontal swipe movements and syncs screen tracking highlights
   const handleScrollMomentumEnd = (event: any) => {
+    // 🛑 GUARD LAYER: Ignore scroll triggers if user is inside the nested subview overlay
+    if (currentScreen === 'notifications') return;
+
     const contentOffsetX = event.nativeEvent.contentOffset.x;
     const pageIndex = Math.round(contentOffsetX / SCREEN_WIDTH);
     
@@ -57,18 +61,14 @@ export default function App() {
 
   const handleToggleDarkMode = () => setIsDarkMode((prev) => !prev);
 
-  // Helper calculation to set initial offset position if states change elsewhere
-  const getHorizontalOffset = () => {
-    if (currentScreen === 'calendar') return SCREEN_WIDTH;
-    if (currentScreen === 'settings') return SCREEN_WIDTH * 2;
-    return 0;
-  };
+  // Determine if we should show authentication/onboarding portals
+  const isAuthScreen = ['login', 'signup', 'forget-password'].includes(currentScreen);
 
   return (
     <SafeAreaProvider>
       <SafeAreaView style={[styles.outerCanvas, { backgroundColor: colors.background }]}>
         <StatusBar 
-          barStyle={systemTheme === 'dark' ? 'light-content' : 'dark-content'} 
+          barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
           backgroundColor={colors.background} 
         />
         <KeyboardAvoidingView 
@@ -77,7 +77,26 @@ export default function App() {
         >
           
           {currentScreen === 'login' ? (
-            <Login colors={colors} onLoginSuccess={() => setCurrentScreen('dashboard')} />
+            <Login 
+              colors={colors} 
+              onLoginSuccess={() => {
+                setCalendarAnchorDate(new Date()); // 👈 Checks system date on click
+                setCurrentScreen('dashboard');
+              }}
+              onSignUp={() => setCurrentScreen('signup')} 
+              onForgotPassword={() => setCurrentScreen('forget-password')}
+            />
+          ) : currentScreen === 'signup' ? (
+            <SignUp 
+              colors={colors}
+              onSignUpSuccess={() => setCurrentScreen('dashboard')}
+              onNavigateBack={() => setCurrentScreen('login')}
+            />
+          ) : currentScreen === 'forget-password' ? (
+            <ForgetPassword 
+              colors={colors}
+              onNavigateBack={() => setCurrentScreen('login')}
+            />
           ) : (
             
             /* Three-panel Horizontal Swipe Canvas container */
@@ -85,18 +104,20 @@ export default function App() {
               ref={scrollViewRef}
               horizontal
               pagingEnabled
+              // Disable horizontal gestures exclusively when looking at notifications so toggles don't swipe away
+              scrollEnabled={currentScreen !== 'notifications'}
               showsHorizontalScrollIndicator={false}
               bounces={false}
               onMomentumScrollEnd={handleScrollMomentumEnd}
               onLayout={() => {
                 let pageIndex = 0;
                 if (currentScreen === 'calendar') pageIndex = 1;
-                if (currentScreen === 'settings') pageIndex = 2;
+                if (currentScreen === 'settings' || currentScreen === 'notifications') pageIndex = 2;
                 
                 if (pageIndex > 0) {
                   scrollViewRef.current?.scrollTo({
                     x: pageIndex * SCREEN_WIDTH,
-                    animated: false, // Keep false so the user doesn't see a weird slide jump on mount
+                    animated: false,
                   });
                 }
               }}
@@ -115,20 +136,29 @@ export default function App() {
               <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
                 <AppCalendar 
                   colors={colors} 
+                  initialDate={calendarAnchorDate} 
                   onSignOut={() => setCurrentScreen('login')}
                   onNavigate={handleNavigation} 
                 />
               </View>
 
-              {/* PAGE 3: Settings View (ADDED) */}
+              {/* PAGE 3: Settings Panel OR Notification Overlay */}
               <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
-                <AppSettings 
-                  colors={colors} 
-                  isDarkMode={isDarkMode}
-                  onToggleDarkMode={handleToggleDarkMode}
-                  onSignOut={() => setCurrentScreen('login')}
-                  onNavigate={handleNavigation} 
-                />
+                {currentScreen === 'notifications' ? (
+                  <NotificationSettings 
+                    colors={colors}
+                    onNavigateBack={() => handleNavigation('settings')}
+                    onNavigate={handleNavigation}
+                  />
+                ) : (
+                  <AppSettings 
+                    colors={colors} 
+                    isDarkMode={isDarkMode}
+                    onToggleDarkMode={handleToggleDarkMode}
+                    onSignOut={() => setCurrentScreen('login')}
+                    onNavigate={handleNavigation} 
+                  />
+                )}
               </View>
             </ScrollView>
 

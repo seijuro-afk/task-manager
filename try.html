@@ -1,0 +1,425 @@
+<!-- Sign In -->
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Authentication</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#eff1f3",
+                        "on-secondary-container": "#5c647a",
+                        "on-surface-variant": "#464554",
+                        "on-secondary-fixed": "#131b2e",
+                        "secondary": "#565e74",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "inverse-surface": "#2d3133",
+                        "surface-tint": "#494bd6",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-container": "#eceef0",
+                        "secondary-container": "#dae2fd",
+                        "tertiary-container": "#b55d00",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#fffbff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "background": "#f7f9fb",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#c0c1ff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "on-surface": "#191c1e",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "on-primary": "#ffffff",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#dae2fd",
+                        "primary": "#4648d4",
+                        "surface-dim": "#d8dadc",
+                        "on-background": "#191c1e",
+                        "surface-container-high": "#e6e8ea",
+                        "outline": "#767586",
+                        "error": "#ba1a1a",
+                        "tertiary": "#904900",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "primary-container": "#6063ee",
+                        "outline-variant": "#c7c4d7",
+                        "primary-fixed": "#e1e0ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#ffdcc5",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#07006c",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#301400"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "xl": "32px",
+                        "md": "16px",
+                        "stack-gap": "12px",
+                        "base": "4px",
+                        "lg": "24px",
+                        "sm": "8px",
+                        "container-padding": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Hanken Grotesk"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Hanken Grotesk"],
+                        "label-caps": ["JetBrains Mono"],
+                        "display": ["Hanken Grotesk"],
+                        "headline-md": ["Hanken Grotesk"]
+                    },
+                    "fontSize": {
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["22px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #4648d4;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background min-h-screen flex items-center justify-center p-md font-body-md text-body-md text-on-surface">
+<main class="w-full max-w-[400px]">
+<!-- Brand / Header -->
+<div class="text-center mb-xl">
+<div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-on-primary mb-md">
+<span class="material-symbols-outlined" data-weight="fill">task_alt</span>
+</div>
+<h1 class="font-display text-display text-on-surface">Welcome Back</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-sm">Sign in to continue to Task Manager</p>
+</div>
+<!-- Form Card -->
+<form class="bg-surface-container-lowest rounded-[12px] p-lg border border-[#f1f5f9] flex flex-col gap-stack-gap">
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant ml-sm" for="email">Email</label>
+<input class="w-full bg-surface-container-low border-none rounded-[12px] px-md py-[14px] font-body-md text-body-md text-on-surface placeholder:text-outline transition-shadow" id="email" placeholder="name@company.com" type="email"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-caps text-label-caps text-on-surface-variant ml-sm" for="password">Password</label>
+<div class="relative">
+<input class="w-full bg-surface-container-low border-none rounded-[12px] px-md py-[14px] font-body-md text-body-md text-on-surface placeholder:text-outline transition-shadow" id="password" placeholder="••••••••" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-sm top-1/2 -translate-y-1/2 p-sm text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<div class="flex justify-end mt-sm">
+<a class="font-body-md text-body-md text-primary hover:text-primary-fixed-dim transition-colors" href="#">Forgot password?</a>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary rounded-[12px] py-[14px] font-headline-md text-headline-md mt-sm scale-98 active:scale-95 transition-transform duration-200 hover:bg-surface-tint" type="submit">
+                Sign In
+            </button>
+</form>
+<!-- Footer Link -->
+<div class="text-center mt-xl">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Don't have an account? 
+                <a class="text-primary hover:text-primary-fixed-dim transition-colors font-headline-md text-headline-md" href="#">Sign up</a>
+</p>
+</div>
+</main>
+<script>
+        // Simple password toggle interaction
+        const pwdInput = document.getElementById('password');
+        const toggleBtn = pwdInput.nextElementSibling;
+        const toggleIcon = toggleBtn.querySelector('.material-symbols-outlined');
+
+        toggleBtn.addEventListener('click', () => {
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.textContent = 'visibility';
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.textContent = 'visibility_off';
+            }
+        });
+    </script>
+</body></html>
+
+<!-- Sign In (Dark) -->
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Authentication</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@600;700&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "surface-container-low": "#f2f3ff",
+                "on-secondary": "#ffffff",
+                "primary-fixed-dim": "#c0c1ff",
+                "on-tertiary-fixed-variant": "#703700",
+                "primary-fixed": "#e1e0ff",
+                "surface-container-high": "#e2e7ff",
+                "primary": "#4648d4",
+                "on-secondary-fixed-variant": "#39485a",
+                "on-tertiary-fixed": "#301400",
+                "tertiary": "#904900",
+                "primary-container": "#6063ee",
+                "on-surface": "#131b2e",
+                "inverse-surface": "#283044",
+                "outline-variant": "#c7c4d7",
+                "on-tertiary-container": "#fffbff",
+                "surface-container": "#eaedff",
+                "tertiary-fixed": "#ffdcc5",
+                "on-secondary-fixed": "#0d1c2d",
+                "surface-dim": "#d2d9f4",
+                "outline": "#767586",
+                "on-primary-container": "#fffbff",
+                "on-primary-fixed": "#07006c",
+                "error-container": "#ffdad6",
+                "on-primary": "#ffffff",
+                "surface-tint": "#494bd6",
+                "surface-variant": "#dae2fd",
+                "background": "#faf8ff",
+                "secondary-fixed": "#d4e4fa",
+                "surface-container-highest": "#dae2fd",
+                "inverse-primary": "#c0c1ff",
+                "secondary": "#516072",
+                "surface-container-lowest": "#ffffff",
+                "on-surface-variant": "#464554",
+                "tertiary-fixed-dim": "#ffb783",
+                "surface-bright": "#faf8ff",
+                "tertiary-container": "#b55d00",
+                "on-error-container": "#93000a",
+                "secondary-container": "#d2e1f7",
+                "inverse-on-surface": "#eef0ff",
+                "on-primary-fixed-variant": "#2f2ebe",
+                "surface": "#faf8ff",
+                "error": "#ba1a1a",
+                "on-error": "#ffffff",
+                "on-secondary-container": "#556477",
+                "on-background": "#131b2e",
+                "on-tertiary": "#ffffff",
+                "secondary-fixed-dim": "#b9c8de"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "stack-lg": "32px",
+                "stack-md": "16px",
+                "container-margin-mobile": "16px",
+                "container-margin-desktop": "40px",
+                "unit": "4px",
+                "stack-sm": "8px",
+                "gutter": "24px"
+        },
+        "fontFamily": {
+                "body-md": [
+                        "Hanken Grotesk"
+                ],
+                "label-md": [
+                        "Hanken Grotesk"
+                ],
+                "display": [
+                        "Hanken Grotesk"
+                ],
+                "headline-md": [
+                        "Hanken Grotesk"
+                ],
+                "title-lg": [
+                        "Hanken Grotesk"
+                ],
+                "headline-lg-mobile": [
+                        "Hanken Grotesk"
+                ],
+                "body-lg": [
+                        "Hanken Grotesk"
+                ],
+                "headline-lg": [
+                        "Hanken Grotesk"
+                ]
+        },
+        "fontSize": {
+                "body-md": [
+                        "14px",
+                        {
+                                "lineHeight": "20px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "label-md": [
+                        "12px",
+                        {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display": [
+                        "48px",
+                        {
+                                "lineHeight": "56px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "title-lg": [
+                        "20px",
+                        {
+                                "lineHeight": "28px",
+                                "fontWeight": "500"
+                        }
+                ],
+                "headline-lg-mobile": [
+                        "24px",
+                        {
+                                "lineHeight": "32px",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-lg": [
+                        "16px",
+                        {
+                                "lineHeight": "24px",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-lg": [
+                        "32px",
+                        {
+                                "lineHeight": "40px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1;
+        }
+        input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #4648d4;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#0f172a] min-h-screen flex items-center justify-center p-stack-md font-body-md text-body-md text-white">
+<main class="w-full max-w-[400px]">
+<!-- Brand / Header -->
+<div class="text-center mb-stack-lg">
+<div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-on-primary mb-stack-md">
+<span class="material-symbols-outlined" data-weight="fill">task_alt</span>
+</div>
+<h1 class="font-display text-display text-white">Welcome Back</h1>
+<p class="font-body-lg text-body-lg text-gray-300 mt-stack-sm">Sign in to continue to Task Manager</p>
+</div>
+<!-- Form Card -->
+<form class="bg-[#1e293b] rounded-[12px] p-gutter border border-[#334155] flex flex-col gap-stack-md">
+<div class="flex flex-col gap-unit">
+<label class="font-label-md text-label-md text-gray-300 ml-stack-sm" for="email">Email</label>
+<input class="w-full bg-[#0f172a] border-none rounded-[12px] px-stack-md py-[14px] font-body-md text-body-md text-white placeholder:text-gray-500 transition-shadow" id="email" placeholder="name@company.com" type="email"/>
+</div>
+<div class="flex flex-col gap-unit">
+<label class="font-label-md text-label-md text-gray-300 ml-stack-sm" for="password">Password</label>
+<div class="relative">
+<input class="w-full bg-[#0f172a] border-none rounded-[12px] px-stack-md py-[14px] font-body-md text-body-md text-white placeholder:text-gray-500 transition-shadow" id="password" placeholder="••••••••" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-stack-sm top-1/2 -translate-y-1/2 p-stack-sm text-gray-400 hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<div class="flex justify-end mt-stack-sm">
+<a class="font-body-md text-body-md text-primary-fixed-dim hover:text-white transition-colors" href="#">Forgot password?</a>
+</div>
+</div>
+<button class="w-full bg-primary text-on-primary rounded-[12px] py-[14px] font-headline-md text-headline-md mt-stack-sm scale-98 active:scale-95 transition-transform duration-200 hover:bg-surface-tint" type="submit">
+                Sign In
+            </button>
+</form>
+<!-- Footer Link -->
+<div class="text-center mt-stack-lg">
+<p class="font-body-md text-body-md text-gray-300">
+                Don't have an account? 
+                <a class="text-primary-fixed-dim hover:text-white transition-colors font-headline-md text-headline-md" href="#">Sign up</a>
+</p>
+</div>
+</main>
+<script>
+        // Simple password toggle interaction
+        const pwdInput = document.getElementById('password');
+        const toggleBtn = pwdInput.nextElementSibling;
+        const toggleIcon = toggleBtn.querySelector('.material-symbols-outlined');
+
+        toggleBtn.addEventListener('click', () => {
+            if (pwdInput.type === 'password') {
+                pwdInput.type = 'text';
+                toggleIcon.textContent = 'visibility';
+            } else {
+                pwdInput.type = 'password';
+                toggleIcon.textContent = 'visibility_off';
+            }
+        });
+    </script>
+</body></html>

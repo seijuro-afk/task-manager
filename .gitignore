@@ -10,7 +10,8 @@ Thumbs.db
 
 # Local Environment Variables
 .env
-.env.local
+.env.*
+!.env.example
 
 # Production/Build outputs
 dist/

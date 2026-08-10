@@ -1,30 +1,140 @@
 // mobile/Calendar.tsx
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Text, 
   View, 
   ScrollView, 
   TouchableOpacity, 
-  Platform 
+  Platform,
+  Animated,
+  Dimensions
 } from 'react-native';
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Plus, ListTodo, Settings, Circle } from 'lucide-react-native';
 import { styles } from './styles';
 
 interface CalendarProps {
   colors: any;
+  initialDate: Date; 
   onSignOut?: () => void;
   onNavigate: (screen: 'dashboard' | 'calendar' | 'settings') => void;
 }
 
-export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProps) {
-  // Calendar Matrix Simulation Data
-  const previousMonthDays = [24, 25, 26, 27, 28, 29, 30];
-  const currentMonthDays = Array.from({ length: 31 }, (_, i) => i + 1);
-  const nextMonthDays = [1, 2, 3, 4];
-  
-  // Simulated day dot indicator flags
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+export default function Calendar({ colors, initialDate, onSignOut, onNavigate }: CalendarProps) {
+  const [currentDate, setCurrentDate] = useState<Date>(() => {
+    const fallback = new Date(initialDate);
+    fallback.setDate(1);
+    return fallback;
+  });
+  const [selectedDay, setSelectedDay] = useState<number>(initialDate.getDate());
+
+  // Animation values for tracking slide transitions
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const updated = new Date(initialDate);
+    updated.setDate(1);
+    setCurrentDate(updated);
+    setSelectedDay(initialDate.getDate());
+  }, [initialDate]);
+
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // ─── TIMELINE MATHEMATICS ───
+  const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+  const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const totalDaysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+  const previousMonthDays: number[] = [];
+  for (let i = 0; i < firstDayIndex; i++) {
+    previousMonthDays.push(totalDaysInPrevMonth - firstDayIndex + 1 + i);
+  }
+
+  const currentMonthDays = Array.from({ length: totalDaysInMonth }, (_, i) => i + 1);
+
+  const totalGridCells = previousMonthDays.length + currentMonthDays.length;
+  const nextMonthCellsNeeded = totalGridCells % 7 === 0 ? 0 : 7 - (totalGridCells % 7);
+  const nextMonthDays = Array.from({ length: nextMonthCellsNeeded }, (_, i) => i + 1);
+
+  // ─── SLIDE ANIMATION PIPELINE ───
+  const animateMonthTransition = (direction: 'next' | 'prev', updateDateCallback: () => void) => {
+    // Determine target start positioning based on directional context
+    const startOffset = direction === 'next' ? SCREEN_WIDTH * 0.25 : -SCREEN_WIDTH * 0.25;
+
+    // Phase 1: Quickly fade out the grid while setting up the offset path
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: -startOffset,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 120,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      // Phase 2: Apply the date update while hidden
+      updateDateCallback();
+
+      // Reset the position back to the incoming side vector
+      slideAnim.setValue(startOffset);
+
+      // Phase 3: Smoothly slide and fade the incoming grid back to center position
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        })
+      ]).start();
+    });
+  };
+
+  const handlePrevMonth = () => {
+    animateMonthTransition('prev', () => {
+      setCurrentDate(new Date(currentYear, currentMonth - 1, 1));
+      setSelectedDay(1);
+    });
+  };
+
+  const handleNextMonth = () => {
+    animateMonthTransition('next', () => {
+      setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+      setSelectedDay(1);
+    });
+  };
+
+  const isToday = (day: number) => {
+    const today = new Date();
+    return (
+      day === today.getDate() &&
+      currentMonth === today.getMonth() &&
+      currentYear === today.getFullYear()
+    );
+  };
+
   const daysWithDots = [4, 5, 16];
-  const activeDay = 14;
+
+  const gridCellLayout = {
+    flexBasis: '14.28%' as const, 
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    paddingVertical: 10,
+  };  
 
   return (
     <View style={[styles.outerCanvas, { backgroundColor: colors.background }]}>
@@ -56,60 +166,83 @@ export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProp
         {/* MONTH CONTROLLER HEADER */}
         <View style={styles.calendarMonthHeaderRow}>
           <Text style={[styles.displayWelcomeText, { fontSize: 22, color: colors.textMain }]}>
-            October 2023
+            {monthNames[currentMonth]} {currentYear}
           </Text>
           <View style={styles.calendarChevronGroup}>
-            <TouchableOpacity style={[styles.calendarSmallNavCircle, { backgroundColor: colors.surfaceLow }]}>
+            <TouchableOpacity 
+              onPress={handlePrevMonth}
+              style={[styles.calendarSmallNavCircle, { backgroundColor: colors.surfaceLow }]}
+            >
               <ChevronLeft color={colors.textMuted} size={20} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.calendarSmallNavCircle, { backgroundColor: colors.surfaceLow }]}>
+            <TouchableOpacity 
+              onPress={handleNextMonth}
+              style={[styles.calendarSmallNavCircle, { backgroundColor: colors.surfaceLow }]}
+            >
               <ChevronRight color={colors.textMuted} size={20} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* DAYS OF WEEK INDICATORS */}
-        <View style={styles.calendarWeekDayLabelRow}>
+        <View style={[styles.calendarWeekDayLabelRow, { flexDirection: 'row', flexWrap: 'wrap' }]}>
           {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
-            <Text key={day} style={[styles.labelCapsIndicator, styles.calendarWeekDayCellWidth, { 
-              color: colors.textPlaceholder,
-              marginLeft: 0,
-              marginBottom: 0
-            }]}>{day}</Text>
+            <View key={day} style={gridCellLayout}>
+              <Text style={[styles.labelCapsIndicator, { 
+                color: colors.textPlaceholder,
+                marginLeft: 0,
+                marginBottom: 0,
+                textAlign: 'center'
+              }]}>{day}</Text>
+            </View>
           ))}
         </View>
 
-        {/* CALENDAR MONTH GRID TILES */}
-        <View style={styles.calendarGridMatrixWrapper}>
+        {/* ANIMATED CALENDAR MONTH GRID TILES CONTAINER */}
+        <Animated.View style={[
+          styles.calendarGridMatrixWrapper, 
+          { 
+            flexDirection: 'row', 
+            flexWrap: 'wrap', 
+            width: '100%',
+            opacity: fadeAnim,
+            transform: [{ translateX: slideAnim }]
+          }
+        ]}>
           
           {/* Out-of-bounds previous month days */}
           {previousMonthDays.map((day, idx) => (
-            <View key={`prev-${idx}`} style={[styles.calendarWeekDayCellWidth, { paddingVertical: 8, alignItems: 'center', opacity: 0.3 }]}>
+            <View key={`prev-${idx}`} style={[gridCellLayout, { opacity: 0.25 }]}>
               <Text style={{ color: colors.textPlaceholder, fontSize: 14 }}>{day}</Text>
             </View>
           ))}
 
           {/* Active current month days */}
           {currentMonthDays.map((day) => {
-            const isActive = day === activeDay;
+            const isUserSelected = day === selectedDay;
+            const currentIsToday = isToday(day);
             const hasDot = daysWithDots.includes(day);
 
             return (
               <TouchableOpacity 
                 key={`curr-${day}`} 
-                style={[styles.calendarDayTileTouchTarget, { 
-                  backgroundColor: isActive ? colors.primary : 'transparent'
+                onPress={() => setSelectedDay(day)}
+                style={[gridCellLayout, styles.calendarDayTileTouchTarget, { 
+                  backgroundColor: isUserSelected ? colors.primary : 'transparent',
+                  borderColor: currentIsToday && !isUserSelected ? colors.primary : 'transparent',
+                  borderWidth: currentIsToday ? 1.5 : 0,
+                  borderRadius: 8
                 }]}
               >
                 <Text style={[styles.footerRegularBodyText, { 
                   fontSize: 14, 
-                  fontWeight: isActive ? '700' : '500',
-                  color: isActive ? '#ffffff' : colors.textMain 
+                  fontWeight: isUserSelected || currentIsToday ? '700' : '500',
+                  color: isUserSelected ? '#ffffff' : currentIsToday ? colors.primary : colors.textMain 
                 }]}>
                   {day}
                 </Text>
-                {hasDot && !isActive && (
-                  <View style={[styles.calendarActiveIndicatorDot, { backgroundColor: colors.textPlaceholder }]} />
+                {hasDot && !isUserSelected && (
+                  <View style={[styles.calendarActiveIndicatorDot, { backgroundColor: currentIsToday ? colors.primary : colors.textPlaceholder }]} />
                 )}
               </TouchableOpacity>
             );
@@ -117,22 +250,24 @@ export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProp
 
           {/* Out-of-bounds future month days */}
           {nextMonthDays.map((day, idx) => (
-            <View key={`next-${idx}`} style={[styles.calendarWeekDayCellWidth, { paddingVertical: 8, alignItems: 'center', opacity: 0.3 }]}>
+            <View key={`next-${idx}`} style={[gridCellLayout, { opacity: 0.25 }]}>
               <Text style={{ color: colors.textPlaceholder, fontSize: 14 }}>{day}</Text>
             </View>
           ))}
-        </View>
+        </Animated.View>
 
         {/* SEPARATOR MATRIX BAR */}
         <View style={[styles.calendarContentDividerLine, { backgroundColor: colors.border }]} />
 
-        {/* ─── AGENDA DEADLINES FOR TODAY ─── */}
+        {/* ─── AGENDA DEADLINES FOR SELECTION ─── */}
         <View style={styles.calendarSectionHeaderRow}>
           <Text style={[styles.dashboardTitleText, { fontSize: 18, color: colors.textMain }]}>
-            Deadlines for Today
+            Deadlines for Selected Date
           </Text>
           <View style={[styles.calendarBadgeCapsWrapper, { backgroundColor: colors.surfaceLow }]}>
-            <Text style={[styles.labelCapsIndicator, { color: colors.textMuted, marginBottom: 0, marginLeft: 0 }]}>OCT 14</Text>
+            <Text style={[styles.labelCapsIndicator, { color: colors.textMuted, marginBottom: 0, marginLeft: 0 }]}>
+              {monthNames[currentMonth].substring(0, 3).toUpperCase()} {selectedDay}
+            </Text>
           </View>
         </View>
 
@@ -167,7 +302,7 @@ export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProp
 
       </ScrollView>
 
-      {/* ─── PERSISTENT UNRESPONSIVE BOTTOM TAB BAR ─── */}
+      {/* ─── PERSISTENT BOTTOM TAB BAR ─── */}
       <View style={[styles.tabBarFixedContainer, {
         bottom: 0,
         paddingBottom: Platform.OS === 'ios' ? 24 : 12,
@@ -175,7 +310,6 @@ export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProp
         borderTopColor: colors.border
       }]}>
         
-        {/* CHANGED: View became TouchableOpacity with an onPress navigation target */}
         <TouchableOpacity 
           onPress={() => onNavigate('dashboard')}
           style={[styles.tabBarNavButtonCell, { opacity: 0.8 }]}
@@ -185,23 +319,20 @@ export default function Calendar({ colors, onSignOut, onNavigate }: CalendarProp
           <Text style={[styles.labelCapsIndicator, { fontSize: 11, color: colors.textPlaceholder, marginTop: 4, marginBottom: 0, marginLeft: 0 }]}>Tasks</Text>
         </TouchableOpacity>
 
-        {/* Calendar Tab Link (Remains static active state wrapper since we are on Calendar) */}
         <View style={[styles.tabBarNavButtonCell, { backgroundColor: colors.surfaceLow }]}>
           <CalendarIcon color={colors.primary} size={20} />
           <Text style={[styles.labelCapsIndicator, { fontSize: 11, color: colors.textMain, marginTop: 4, marginBottom: 0, marginLeft: 0, fontWeight: '700' }]}>Calendar</Text>
         </View>
 
-        {/* Settings Tab Link (Muted structural placeholder) */}
-        {/* Navigation Destination: Settings (Now Interactive) */}
         <TouchableOpacity 
-        onPress={() => onNavigate('settings')}
-        style={styles.tabBarNavButtonCell}
-        activeOpacity={0.7}
+          onPress={() => onNavigate('settings')}
+          style={styles.tabBarNavButtonCell}
+          activeOpacity={0.7}
         >
-            <Settings color={colors.textPlaceholder} size={20} />
-            <Text style={[styles.labelCapsIndicator, { fontSize: 11, color: colors.textPlaceholder, marginTop: 4, marginBottom: 0, marginLeft: 0 }]}>
-                Settings
-            </Text>
+          <Settings color={colors.textPlaceholder} size={20} />
+          <Text style={[styles.labelCapsIndicator, { fontSize: 11, color: colors.textPlaceholder, marginTop: 4, marginBottom: 0, marginLeft: 0 }]}>
+            Settings
+          </Text>
         </TouchableOpacity>
       </View>
 

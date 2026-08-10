@@ -7,9 +7,11 @@ import { styles } from './styles';
 interface LoginProps {
   colors: any;
   onLoginSuccess: () => void;
+  onSignUp: () => void;
+  onForgotPassword: () => void;
 }
 
-export default function Login({ colors, onLoginSuccess }: LoginProps) {
+export default function Login({ colors, onLoginSuccess, onSignUp, onForgotPassword }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secureText, setSecureText] = useState(true);
@@ -66,7 +68,7 @@ export default function Login({ colors, onLoginSuccess }: LoginProps) {
             </TouchableOpacity>
           </View>
           <View style={styles.forgotPasswordAlignWrapper}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={onForgotPassword}>
               <Text style={[styles.forgotPasswordLinkText, { color: colors.primary }]}>Forgot password?</Text>
             </TouchableOpacity>
           </View>
@@ -76,6 +78,10 @@ export default function Login({ colors, onLoginSuccess }: LoginProps) {
           <Text style={styles.headlineButtonTextLabel}>Sign In</Text>
         </TouchableOpacity>
       </View>
+      <View>
+        <Text style={[styles.bodySubtitleText, { color: colors.textMuted }, { fontSize: 14 }, {textAlign: 'center'}]}>Don't have an account? <Text style={{ color: colors.primary }} onPress={onSignUp}>Sign Up</Text></Text>
+      </View>
     </View>
+
   );
 }
